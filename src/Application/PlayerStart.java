@@ -86,6 +86,8 @@ public class PlayerStart extends Application
 		primaryStage.setScene(scene);
 		
 		primaryStage.show();
+		
+		//Test SSH Connection to Github
 	}
 	
 }
