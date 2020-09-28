@@ -1,6 +1,6 @@
-package Application;
-import java.awt.font.LayoutPath;
+package application;
 
+import java.awt.font.LayoutPath;
 import javafx.application.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -84,6 +84,7 @@ public class PlayerStart extends Application
 		
 		Scene scene = new Scene(grid, 1000,600);
 		primaryStage.setScene(scene);
+		scene.getStylesheets().add(getClass().getResource("/css/MainTheme.css").toString());
 		
 		primaryStage.show();
 	}
