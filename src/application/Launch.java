@@ -11,7 +11,7 @@ public class Launch {
 	
 	public static void  main (String args []) throws Exception 
 	{
-		Application.launch(PlayerStart.class, args);
+		Application.launch(Main.class, args);
 	}
 
 }
