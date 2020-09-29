@@ -1,0 +1,14 @@
+.root {
+     -fx-background-color: linear-gradient(to top, grey, black);
+     -fx-text-fill: black;   
+}
+
+.button{
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+}
+
+ 
