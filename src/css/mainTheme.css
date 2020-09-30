@@ -1,3 +1,40 @@
 .root {
 	-fx-background-color: grey;
 }
+
+.menu-bar{
+	-fx-background-color:  	#282828;
+	-fx-focused-text-base-color: white ;
+	-fx-selection-bar: #ea5353 ;
+	-fx-opacity: 0.85;
+}
+
+.menu .label{
+	-fx-text-fill: white;
+}
+
+.menu-item{
+	-fx-background-color: #383838;
+}
+
+.menu-item:hover {
+	-fx-background-color:  	#585858;
+}
+
+.context-menu {
+	-fx-background-color:  	#383838;
+
+	-fx-background-radius: 1px;
+}
+
+.context-menu:hover {
+	-fx-background-color:  	#585858;
+}
+
+.button:hover {
+	-fx-opacity: 0.8;
+}
+
+
+
+
