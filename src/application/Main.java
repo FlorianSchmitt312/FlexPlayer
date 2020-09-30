@@ -1,26 +1,28 @@
 package application;
 
-import java.awt.font.LayoutPath;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.application.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
+
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+
 import javafx.util.Duration;
 
 public class Main extends Application
@@ -72,18 +74,70 @@ public class Main extends Application
 		//----------------------------------- Main Scene --------------------------------------
 		
 		
-		BorderPane mainGui = new BorderPane();
+		BorderPane mainFrame = new BorderPane();
 		HBox center = new HBox(10);
-		Button back = new Button("Back");
-		Text test = new Text("MainGui");
-		center.getChildren().add(test);
-		center.getChildren().add(back);
-		mainGui.setCenter(center);
-		mainGui.setPadding(new Insets(25,25,25,25));
+				
+		MenuBar menuBar = new MenuBar();
 		
-
-		Scene mainScene = new Scene(mainGui, 1000,600);
+		Menu fileMenu = new Menu("Dateien");
+		Menu propertiesMenu =  new Menu("Einstellungen");
+		Menu helpMenu = new Menu("Hilfe");
+		
+		MenuItem search = new MenuItem("Suchen");
+		MenuItem windowSize = new MenuItem("Fenstergröße ändern");
+		MenuItem help = new MenuItem("Weblink");
+		
+		Button skipBack = new Button ();
+		Button play = new Button ();
+		Button pause = new Button ();
+		Button stop = new Button ();
+		Button skipForward = new Button ();
+		
+		Image btnSkipBack = new Image("/img/skipback.png");
+		Image btnPlay = new Image("/img/play.png");
+		Image btnPause = new Image("/img/pause.png");
+		Image btnStop = new Image("/img/stop2.png");
+		Image btnSkipForward = new Image("/img/skipforward.png");
+				
+		ImageView viewBtnSkipBack = new ImageView (btnSkipBack);
+		ImageView viewBtnPlay = new ImageView (btnPlay);
+		ImageView viewBtnPause = new ImageView (btnPause);
+		ImageView viewBtnStop = new ImageView (btnStop);
+		ImageView viewBtnSkipForward = new ImageView (btnSkipForward);
+		
+		skipBack.setGraphic(viewBtnSkipBack);
+		skipBack.setShape(new Circle());
+		play.setGraphic(viewBtnPlay);
+		play.setShape(new Circle());
+		pause.setGraphic(viewBtnPause);
+		pause.setShape(new Circle());
+		stop.setGraphic(viewBtnStop);
+		stop.setShape(new Circle());
+		skipForward.setGraphic(viewBtnSkipForward);
+		skipForward.setShape(new Circle());
+					
+		center.getChildren().addAll(skipBack,play,pause,stop,skipForward);
+		center.setPadding(new Insets(20,20,20,20));
+		
+		center.setAlignment(Pos.CENTER);
+		
+		fileMenu.getItems().addAll(search);
+		propertiesMenu.getItems().add(windowSize);
+		helpMenu.getItems().add(help);
+			
+		menuBar.getMenus().addAll(fileMenu, propertiesMenu, helpMenu);
+		menuBar.setPadding(new Insets(5,5,5,5));
+		
+		mainFrame.setTop(menuBar);
+		mainFrame.setBottom(center);
+		//mainGui.setPadding(new Insets(25,25,25,25));
+		
+		Scene mainScene = new Scene(mainFrame, 1000,600);
 		mainScene.getStylesheets().add(getClass().getResource("/css/mainTheme.css").toString());	
+		
+		
+		
+		//---------------------------------- Event Handlers ---------------------------------------
 		
 		button.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -93,13 +147,46 @@ public class Main extends Application
 			}		
 		});
 		
-		back.setOnAction(new EventHandler<ActionEvent>() {
+		play.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent f) {			
-				primaryStage.setScene(scene);				
+			public void handle(ActionEvent e) {				
+				System.out.println("Play");
+				
 			}		
 		});
-			
+		
+		stop.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {				
+				System.out.println("Stop");
+				
+			}		
+		});
+		
+		pause.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {				
+				System.out.println("Pause");
+				
+			}		
+		});
+		
+		skipBack.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {				
+				System.out.println("Zurück");
+				
+			}		
+		});
+		
+		skipForward.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {				
+				System.out.println("Vorwärts");
+				
+			}		
+		});
+				
 		primaryStage.show();
 	}	
 }
