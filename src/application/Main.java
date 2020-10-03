@@ -3,6 +3,9 @@ package application;
 import java.awt.Panel;
 import java.io.File;
 import java.nio.file.Paths;
+
+import com.sun.javafx.scene.PointLightHelper.PointLightAccessor;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -53,7 +56,8 @@ public class Main extends Application
 	private MediaView mediaView;
 	private BorderPane bottomPanel;
 	private HBox mediaControl;
-	private HBox volumeControl;	
+	private HBox volumeControl;
+	private VBox timeControl;
 	private Label placeholder;			
 	private MenuBar menuBar;	
 	private Menu fileMenu;
@@ -78,6 +82,7 @@ public class Main extends Application
 	private ImageView viewBtnStop;
 	private ImageView viewBtnSkipForward;	
 	private Slider volumeSlider;
+	private Slider timeBar;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -125,7 +130,7 @@ public class Main extends Application
 		
 
 		//--- Initialize the Media Control Buttons and set the Button Images
-		f = new File("C:/Users/flosc/eclipse-workspace/FlexPlayerEnhanced/src/application/Sleepwalker.mp3");
+		f = new File("C:/Users/flosc/eclipse-workspace/FlexPlayerEnhanced/src/music/Sleepwalker.mp3");
 		
 		pick = new Media((f).toURI().toString());
 		mediaPlayer = new MediaPlayer(pick);
@@ -135,6 +140,7 @@ public class Main extends Application
 		bottomPanel = new BorderPane();
 		mediaControl = new HBox();
 		volumeControl = new HBox();
+		timeControl = new VBox();
 		
 		placeholder = new Label("Aktueller Titel");
 		
@@ -214,6 +220,12 @@ public class Main extends Application
 		volumeControl.setStyle("-thumb-color: #ea5353;");
 			
 		
+		//--- TimeBar
+		
+		timeBar = new Slider();
+		timeBar.setPadding(new Insets(20,20,20,20));
+		
+		
 			
 		//--- Add the Media Control Buttons to the HBoxes which are positioned in the MainFrame.
 		mediaControl.getChildren().addAll(skipBack,play,pause,stop,skipForward);
@@ -224,15 +236,19 @@ public class Main extends Application
 		volumeControl.setAlignment(Pos.CENTER_LEFT);
 		volumeControl.setPrefWidth(150);
 		
+		timeControl.getChildren().add(timeBar);
+		
 		placeholder.setPrefWidth(150);
 		placeholder.setPadding(new Insets(20,20,20,20));
 		
 		bottomPanel.setCenter(mediaControl);
 		bottomPanel.setRight(volumeSlider);
-		bottomPanel.setLeft(mediaView);
+		bottomPanel.setLeft(placeholder);
+		bottomPanel.setBottom(timeControl);
 		BorderPane.setAlignment(volumeSlider, Pos.CENTER);
 		BorderPane.setAlignment(mediaControl, Pos.CENTER);
 		BorderPane.setAlignment(placeholder, Pos.CENTER);
+		BorderPane.setAlignment(timeControl, Pos.CENTER);
 		
 		
 		
