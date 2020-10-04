@@ -1,17 +1,14 @@
 package application;
 
-import java.awt.Panel;
 import java.io.File;
-import java.nio.file.Paths;
-
-import com.sun.javafx.scene.PointLightHelper.PointLightAccessor;
-
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.application.*;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -29,8 +26,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 
 public class Main extends Application
 {
@@ -50,39 +49,22 @@ public class Main extends Application
 	
 	// ---- Main Frame ----
 	private BorderPane mainFrame;
-	private File f;	
+	private File choosenFile;
 	private Media pick;
 	private MediaPlayer mediaPlayer;
-	private MediaView mediaView;
+	public  MediaView mediaView;
 	private BorderPane bottomPanel;
-	private HBox mediaControl;
-	private HBox volumeControl;
-	private VBox timeControl;
-	private Label placeholder;			
+	private HBox volumeControl, mediaControl;
+	private VBox timeControl, songLabel;
+	private Label songTitle, speaker;
 	private MenuBar menuBar;	
-	private Menu fileMenu;
-	private Menu propertiesMenu;
-	private Menu helpMenu;
-	private MenuItem search;
-	private MenuItem windowSize;
-	private MenuItem help;	
-	private Button skipBack;
-	private Button play;
-	private Button pause;
-	private Button stop;
-	private Button skipForward;
-	private Image btnSkipBack;
-	private Image btnPlay;
-	private Image btnPause;
-	private Image btnStop;
-	private Image btnSkipForward;			
-	private ImageView viewBtnSkipBack;
-	private ImageView viewBtnPlay;
-	private ImageView viewBtnPause;
-	private ImageView viewBtnStop;
-	private ImageView viewBtnSkipForward;	
-	private Slider volumeSlider;
-	private Slider timeBar;
+	private Menu fileMenu, propertiesMenu, helpMenu;
+	private MenuItem search, windowSize, help;
+	private Button skipBack, play, pause, stop, skipForward;
+	private Image btnSkipBack, btnPlay,btnPause, btnStop, btnSkipForward, speakerImage;
+	private ImageView viewBtnSkipBack,viewBtnPlay, viewBtnPause, viewBtnStop, viewBtnSkipForward, speakerImageView;
+	private Slider volumeSlider, timeBar;
+	private FileChooser fileChooser;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -90,7 +72,7 @@ public class Main extends Application
 		primaryStage.setTitle("FlexPlayer");
 		primaryStage.getIcons().add(new Image("/img/appIcon.png"));
 
-		//--------------------------------- Login Scene --------------------------------
+		//--------------------------------- Intro Scene --------------------------------
 			
 		startScreen = new VBox();
 		startScreen.setAlignment(Pos.CENTER);
@@ -124,15 +106,15 @@ public class Main extends Application
 				
 		scene = new Scene(startScreen, 1000,600);
 		scene.getStylesheets().add(getClass().getResource("/css/startScreen.css").toString());
-		primaryStage.setScene(scene);
+		//primaryStage.setScene(scene);
 	
 		//----------------------------------- Main Scene --------------------------------------
 		
 
 		//--- Initialize the Media Control Buttons and set the Button Images
-		f = new File("C:/Users/flosc/eclipse-workspace/FlexPlayerEnhanced/src/music/Sleepwalker.mp3");
+		choosenFile = new File("C:/Users/flosc/eclipse-workspace/FlexPlayerEnhanced/src/music/Sleepwalker.mp3");
 		
-		pick = new Media((f).toURI().toString());
+		pick = new Media((choosenFile).toURI().toString());
 		mediaPlayer = new MediaPlayer(pick);
 		mediaView = new MediaView(mediaPlayer);
 				
@@ -141,8 +123,10 @@ public class Main extends Application
 		mediaControl = new HBox();
 		volumeControl = new HBox();
 		timeControl = new VBox();
+		songLabel = new VBox();
 		
-		placeholder = new Label("Aktueller Titel");
+		songTitle = new Label("Aktueller Titel");
+		speaker = new Label ();
 		
 		skipBack = new Button ();
 		play = new Button ();
@@ -173,7 +157,7 @@ public class Main extends Application
 		skipForward.setGraphic(viewBtnSkipForward);
 		skipForward.setShape(new Circle());
 		
-	
+		
 		
 		//--- Add Functionality to the Media Control Buttons
 		play.setOnAction(new EventHandler<ActionEvent>() {
@@ -205,49 +189,108 @@ public class Main extends Application
 	
 		//--- Initialize the VolumSlider and add Functionality
 		volumeSlider = new Slider();
-		
-		volumeSlider.setValue(mediaPlayer.getVolume() *100);
+		volumeSlider.setMaxWidth(100);
+		volumeSlider.setValue(mediaPlayer.getVolume() *50);
+
 		volumeSlider.valueProperty().addListener(new InvalidationListener() {		
 			@Override
 			public void invalidated(Observable arg0) {
 				mediaPlayer.setVolume(volumeSlider.getValue() / 100);			
 			}
 		});
-				
-		//volumeSlider.setPrefWidth(100);
-		volumeSlider.setMinWidth(50);
-		volumeSlider.setPadding(new Insets(20,20,20,20));
-		volumeControl.setStyle("-thumb-color: #ea5353;");
-			
 		
+		volumeSlider.valueProperty().addListener(new ChangeListener<Number>() {		
+			@Override
+			public void changed( ObservableValue<? extends Number> observableValue, 
+	                   Number oldValue, 
+	                   Number newValue) 
+			{
+				oldValue = volumeSlider.getMax();
+				newValue = volumeSlider.getValue();
+				
+				
+				if (volumeSlider.getValue() >= volumeSlider.getMax()/2) {
+					speakerImage = new Image ("/img/speaker_100.png");
+					speakerImageView = new ImageView(speakerImage);
+					speaker.setGraphic(speakerImageView);
+					speaker.setPadding(new Insets(0,10,0,0));
+				}
+				else if (volumeSlider.getValue() < volumeSlider.getMax()/2 && volumeSlider.getValue() > volumeSlider.getMax()/100) {
+					speakerImage = new Image ("/img/speaker_50.png");
+					speakerImageView = new ImageView(speakerImage);
+					speaker.setGraphic(speakerImageView);
+					speaker.setPadding(new Insets(0,10,0,0));
+				}
+				else if (volumeSlider.getValue() < volumeSlider.getMax()/100) {
+					speakerImage = new Image ("/img/speaker_0.png");
+					speakerImageView = new ImageView(speakerImage);
+					speaker.setGraphic(speakerImageView);	
+					speaker.setPadding(new Insets(0,10,0,0));
+				}
+			}
+		});
+		
+		speakerImage = new Image ("/img/speaker_50.png");
+		speakerImageView = new ImageView(speakerImage);
+		speaker.setGraphic(speakerImageView);
+		speaker.setPadding(new Insets(0,10,0,0));
+		//volumeSlider.setPrefWidth(100);
+		
+		
+		
+	
 		//--- TimeBar
 		
 		timeBar = new Slider();
 		timeBar.setPadding(new Insets(20,20,20,20));
 		
 		
-			
-		//--- Add the Media Control Buttons to the HBoxes which are positioned in the MainFrame.
-		mediaControl.getChildren().addAll(skipBack,play,pause,stop,skipForward);
-		mediaControl.setPadding(new Insets(20,20,20,20));		
-		mediaControl.setAlignment(Pos.CENTER);
 		
+		//--- SongTitle
+		songTitle.setTextFill(Color.WHITE);
+		
+		
+		
+		//--- FileChooser
+		fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Ressource File");
+		fileChooser.setInitialDirectory(new File("C:/Users/flosc/Music"));
+
+		
+		
+					
+		//--- Add the Media Control Buttons to the HBoxes which are positioned in the MainFrame BorderPane.
+		//--- Add the the Speaker Label and the Volume Slider to the bottom right HBox's.
+		//--- Add the Song Title to the left bottom VBox..
+		//--- Add the Time Bar to the Bottom of the Scene.
+		mediaControl.getChildren().addAll(skipBack,play,pause,stop,skipForward);
+		mediaControl.setPadding(new Insets(20,20,20,20));
+		mediaControl.setBackground(new Background(new BackgroundFill(Color.web("#282828"), CornerRadii.EMPTY, Insets.EMPTY)));
+		mediaControl.setAlignment(Pos.CENTER);
+		mediaControl.setMinWidth(600);
+		
+		volumeControl.getChildren().add(speaker);
 		volumeControl.getChildren().add(volumeSlider);
-		volumeControl.setAlignment(Pos.CENTER_LEFT);
-		volumeControl.setPrefWidth(150);
+		volumeControl.setBackground(new Background(new BackgroundFill(Color.web("#282828"), CornerRadii.EMPTY, Insets.EMPTY)));
+		volumeControl.setPadding(new Insets(45,20,45,0));
+		volumeControl.setAlignment(Pos.CENTER_LEFT);		
 		
 		timeControl.getChildren().add(timeBar);
 		
-		placeholder.setPrefWidth(150);
-		placeholder.setPadding(new Insets(20,20,20,20));
+		songLabel.getChildren().add(songTitle);
+		songLabel.setPadding(new Insets(0,0,0,20));
+		
+		songTitle.setPrefWidth(150);
+		songTitle.setPadding(new Insets(40,20,40,20));
+		songTitle.setBackground(new Background(new BackgroundFill(Color.web("#282828"), CornerRadii.EMPTY, Insets.EMPTY)));
 		
 		bottomPanel.setCenter(mediaControl);
-		bottomPanel.setRight(volumeSlider);
-		bottomPanel.setLeft(placeholder);
+		bottomPanel.setRight(volumeControl);
+		bottomPanel.setLeft(songLabel);
 		bottomPanel.setBottom(timeControl);
 		BorderPane.setAlignment(volumeSlider, Pos.CENTER);
 		BorderPane.setAlignment(mediaControl, Pos.CENTER);
-		BorderPane.setAlignment(placeholder, Pos.CENTER);
+		BorderPane.setAlignment(songLabel, Pos.CENTER_RIGHT);
 		BorderPane.setAlignment(timeControl, Pos.CENTER);
 		
 		
@@ -260,7 +303,7 @@ public class Main extends Application
 		helpMenu = new Menu("Hilfe");
 		
 		search = new MenuItem("Suchen");
-		windowSize = new MenuItem("Fenstergröße ändern");
+		windowSize = new MenuItem("Fenster sperren");
 		help = new MenuItem("Weblink");
 		
 		fileMenu.getItems().addAll(search);
@@ -270,8 +313,31 @@ public class Main extends Application
 		menuBar.getMenus().addAll(fileMenu, propertiesMenu, helpMenu);
 		menuBar.setPadding(new Insets(5,5,5,5));
 		
+		search.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+							
+				choosenFile = fileChooser.showOpenDialog(primaryStage);
+			}
+		});
+
+		windowSize.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				
+				if(windowSize.getText().equals("Fenster sperren")) {
+					primaryStage.setResizable(false);
+					windowSize.setText("Fenster freigeben");
+				}
+				else if (windowSize.getText().equals("Fenster freigeben")) {
+					primaryStage.setResizable(true);
+					windowSize.setText("Fenster sperren");
+				}			
+			}
+		});			
 		
-		
+	
+			
 		//--- Set up the MainFrame with the different Panes. Set up the MainFrame and initialize it.
 		mainFrame.setTop(menuBar);
 		mainFrame.setBottom(bottomPanel);
@@ -281,20 +347,20 @@ public class Main extends Application
 			
 		
 		
-		//---------------------------------- Event Handlers ---------------------------------------
+		//---------------------------------- Scene Switch ---------------------------------------
 		
 		
 		//--- Switch from the Intro Scene to the MainFrame
 		button.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) {				
-				primaryStage.setScene(mainScene);
-				
+			public void handle(ActionEvent e) {	
+				primaryStage.setScene(mainScene);			
 			}		
 		});
 			
 			
 		//--- Show the PrimaryStage
+		primaryStage.setScene(mainScene);
 		primaryStage.show();
 	}	
 }
