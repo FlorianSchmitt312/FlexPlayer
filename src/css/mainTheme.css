@@ -22,14 +22,12 @@
 }
 
 .context-menu {
-	-fx-background-color:  	#383838;
-
+	-fx-background-color:  	#282828;
+	-fx-opacity: 0.85;
 	-fx-background-radius: 1px;
 }
 
-.context-menu:hover {
-	-fx-background-color:  	#585858;
-}
+
 
 .button:hover {
 	-fx-opacity: 0.8;

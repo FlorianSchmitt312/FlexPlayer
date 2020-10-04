@@ -52,7 +52,7 @@ public class Main extends Application
 	private File choosenFile;
 	private Media pick;
 	private MediaPlayer mediaPlayer;
-	public  MediaView mediaView;
+	public  MediaView mediaView, choosenFileView;
 	private BorderPane bottomPanel;
 	private HBox volumeControl, mediaControl;
 	private VBox timeControl, songLabel;
@@ -65,6 +65,10 @@ public class Main extends Application
 	private ImageView viewBtnSkipBack,viewBtnPlay, viewBtnPause, viewBtnStop, viewBtnSkipForward, speakerImageView;
 	private Slider volumeSlider, timeBar;
 	private FileChooser fileChooser;
+	
+	public void setFile (File choosenFile) {
+		this.choosenFile = choosenFile;
+	}
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -112,11 +116,6 @@ public class Main extends Application
 		
 
 		//--- Initialize the Media Control Buttons and set the Button Images
-		choosenFile = new File("C:/Users/flosc/eclipse-workspace/FlexPlayerEnhanced/src/music/Sleepwalker.mp3");
-		
-		pick = new Media((choosenFile).toURI().toString());
-		mediaPlayer = new MediaPlayer(pick);
-		mediaView = new MediaView(mediaPlayer);
 				
 		mainFrame = new BorderPane();
 		bottomPanel = new BorderPane();
@@ -158,47 +157,10 @@ public class Main extends Application
 		skipForward.setShape(new Circle());
 		
 		
-		
-		//--- Add Functionality to the Media Control Buttons
-		play.setOnAction(new EventHandler<ActionEvent>() {
 
-			@Override
-			public void handle(ActionEvent e) {
-				mediaPlayer.play();
-			}
-		});
-		
-		pause.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent e) {
-				mediaPlayer.pause();
-			}
-		});
-		
-		stop.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent e) {
-				mediaPlayer.stop();
-			}
-		});
-		
-		
-		
-	
-		//--- Initialize the VolumSlider and add Functionality
+		//--- Initialize the VolumSlider and add speaker icon which is binded to the slider position
 		volumeSlider = new Slider();
 		volumeSlider.setMaxWidth(100);
-		volumeSlider.setValue(mediaPlayer.getVolume() *50);
-
-		volumeSlider.valueProperty().addListener(new InvalidationListener() {		
-			@Override
-			public void invalidated(Observable arg0) {
-				mediaPlayer.setVolume(volumeSlider.getValue() / 100);			
-			}
-		});
-		
 		volumeSlider.valueProperty().addListener(new ChangeListener<Number>() {		
 			@Override
 			public void changed( ObservableValue<? extends Number> observableValue, 
@@ -313,13 +275,55 @@ public class Main extends Application
 		menuBar.getMenus().addAll(fileMenu, propertiesMenu, helpMenu);
 		menuBar.setPadding(new Insets(5,5,5,5));
 		
+		
+		
 		search.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
 							
 				choosenFile = fileChooser.showOpenDialog(primaryStage);
+				setFile(choosenFile);
+				
+				Media searchedFile = new Media((choosenFile).toURI().toString());
+				MediaPlayer choosenFilePlayer = new MediaPlayer(searchedFile);
+				choosenFileView = new MediaView (choosenFilePlayer);
+								
+				play.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent e) {
+						choosenFilePlayer.play();
+					}
+				});
+				
+				pause.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent e) {
+						choosenFilePlayer.pause();
+					}
+				});
+				
+				stop.setOnAction(new EventHandler<ActionEvent>() {
+
+					@Override
+					public void handle(ActionEvent e) {
+						choosenFilePlayer.stop();
+					}
+				});
+				
+				volumeSlider.setValue(choosenFilePlayer.getVolume() *50);
+
+				volumeSlider.valueProperty().addListener(new InvalidationListener() {		
+					@Override
+					public void invalidated(Observable arg0) {
+						choosenFilePlayer.setVolume(volumeSlider.getValue() / 100);			
+					}
+				});
 			}
 		});
+		
+		
 
 		windowSize.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -334,10 +338,10 @@ public class Main extends Application
 					windowSize.setText("Fenster sperren");
 				}			
 			}
-		});			
+		});		
 		
-	
-			
+		
+		
 		//--- Set up the MainFrame with the different Panes. Set up the MainFrame and initialize it.
 		mainFrame.setTop(menuBar);
 		mainFrame.setBottom(bottomPanel);
