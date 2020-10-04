@@ -39,7 +39,15 @@ VBox{
 	-fx-background-color:  	#282828;
 }
 
+.slider .track{
+    -fx-control-inner-background: #ea5353!important;
+    -fx-padding: 3.5; 
+    -fx-background-insets: 0 0 0 ,0,0;
+}
 
+.slider .thumb {
+	-fx-background-color: white!important;
+}
 
 
 
