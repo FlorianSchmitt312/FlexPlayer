@@ -7,6 +7,7 @@ import javafx.animation.SequentialTransition;
 import javafx.application.*;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -17,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -27,6 +29,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -50,13 +53,11 @@ public class Main extends Application
 	// ---- Main Frame ----
 	private BorderPane mainFrame;
 	private File choosenFile;
-	private Media pick;
-	private MediaPlayer mediaPlayer;
 	public  MediaView mediaView, choosenFileView;
 	private BorderPane bottomPanel;
 	private HBox volumeControl, mediaControl;
 	private VBox timeControl, songLabel;
-	private Label songTitle, speaker;
+	private Label songTitle, speaker, searchAlert;
 	private MenuBar menuBar;	
 	private Menu fileMenu, propertiesMenu, helpMenu;
 	private MenuItem search, windowSize, help;
@@ -65,9 +66,21 @@ public class Main extends Application
 	private ImageView viewBtnSkipBack,viewBtnPlay, viewBtnPause, viewBtnStop, viewBtnSkipForward, speakerImageView;
 	private Slider volumeSlider, timeBar;
 	private FileChooser fileChooser;
-	
+	private Media searchedFile;
+	private MediaPlayer choosenFilePlayer;
+	private String title; 
+
+	//--- Setters and Getters
 	public void setFile (File choosenFile) {
 		this.choosenFile = choosenFile;
+	}
+	
+	public void setSongTitle (String title) {
+		this.songTitle.setText(title);
+	}
+	
+	public void setSearchAlert (String title) {
+		this.searchAlert.setText(title);
 	}
 	
 	@Override
@@ -124,7 +137,7 @@ public class Main extends Application
 		timeControl = new VBox();
 		songLabel = new VBox();
 		
-		songTitle = new Label("Aktueller Titel");
+		songTitle = new Label("");
 		speaker = new Label ();
 		
 		skipBack = new Button ();
@@ -199,8 +212,7 @@ public class Main extends Application
 		//volumeSlider.setPrefWidth(100);
 		
 		
-		
-	
+			
 		//--- TimeBar
 		
 		timeBar = new Slider();
@@ -210,17 +222,18 @@ public class Main extends Application
 		
 		//--- SongTitle
 		songTitle.setTextFill(Color.WHITE);
-		
+		searchAlert = new Label ("Wählen sie über Dateien einen Titel aus");
+		searchAlert.setFont(Font.font("Calibri", FontWeight.BLACK, 20));
+	
 		
 		
 		//--- FileChooser
 		fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Ressource File");
-		fileChooser.setInitialDirectory(new File("C:/Users/flosc/Music"));
+		fileChooser.setInitialDirectory(new File("C:/Users/flosc/Music/Musik"));
 
 		
-		
-					
+						
 		//--- Add the Media Control Buttons to the HBoxes which are positioned in the MainFrame BorderPane.
 		//--- Add the the Speaker Label and the Volume Slider to the bottom right HBox's.
 		//--- Add the Song Title to the left bottom VBox..
@@ -231,8 +244,7 @@ public class Main extends Application
 		mediaControl.setAlignment(Pos.CENTER);
 		mediaControl.setMinWidth(600);
 		
-		volumeControl.getChildren().add(speaker);
-		volumeControl.getChildren().add(volumeSlider);
+		volumeControl.getChildren().addAll(speaker, volumeSlider);
 		volumeControl.setBackground(new Background(new BackgroundFill(Color.web("#282828"), CornerRadii.EMPTY, Insets.EMPTY)));
 		volumeControl.setPadding(new Insets(45,20,45,0));
 		volumeControl.setAlignment(Pos.CENTER_LEFT);		
@@ -245,11 +257,12 @@ public class Main extends Application
 		songTitle.setPrefWidth(150);
 		songTitle.setPadding(new Insets(40,20,40,20));
 		songTitle.setBackground(new Background(new BackgroundFill(Color.web("#282828"), CornerRadii.EMPTY, Insets.EMPTY)));
-		
+			
 		bottomPanel.setCenter(mediaControl);
 		bottomPanel.setRight(volumeControl);
 		bottomPanel.setLeft(songLabel);
 		bottomPanel.setBottom(timeControl);
+			
 		BorderPane.setAlignment(volumeSlider, Pos.CENTER);
 		BorderPane.setAlignment(mediaControl, Pos.CENTER);
 		BorderPane.setAlignment(songLabel, Pos.CENTER_RIGHT);
@@ -275,51 +288,90 @@ public class Main extends Application
 		menuBar.getMenus().addAll(fileMenu, propertiesMenu, helpMenu);
 		menuBar.setPadding(new Insets(5,5,5,5));
 		
+
 		
-		
+		//--- Add functionality to MenuItems
 		search.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-							
+					
+				fileChooser.setTitle("Datei auswählen");
+				fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Audiodatei","*.wav","*.mp3"));
+				
 				choosenFile = fileChooser.showOpenDialog(primaryStage);
-				setFile(choosenFile);
-				
-				Media searchedFile = new Media((choosenFile).toURI().toString());
-				MediaPlayer choosenFilePlayer = new MediaPlayer(searchedFile);
-				choosenFileView = new MediaView (choosenFilePlayer);
+											
+				if(choosenFile != null) {
+					
+					if(choosenFilePlayer != null) {
+					   choosenFilePlayer.stop();
+					   choosenFilePlayer.dispose();
+				    }
+					
+					searchedFile = new Media((choosenFile).toURI().toString());
+					choosenFilePlayer = new MediaPlayer(searchedFile);
+														
+					title = choosenFile.getName();
+					setSongTitle(title);	
+					
+					setSearchAlert("");
+									
+					play.setOnAction(new EventHandler<ActionEvent>() {
+	
+						@Override
+						public void handle(ActionEvent e) {
+							choosenFilePlayer.play();						
+						}
+					});
+					
+					pause.setOnAction(new EventHandler<ActionEvent>() {
+	
+						@Override
+						public void handle(ActionEvent f) {
+							choosenFilePlayer.pause();
+						}
+					});
+					
+					stop.setOnAction(new EventHandler<ActionEvent>() {
+	
+						@Override
+						public void handle(ActionEvent g) {
+							choosenFilePlayer.stop();
+						}
+					});
+									
+					volumeSlider.setValue(choosenFilePlayer.getVolume() *50);
+	
+					volumeSlider.valueProperty().addListener(new InvalidationListener() {		
+						@Override
+						public void invalidated(Observable arg0) {
+							choosenFilePlayer.setVolume(volumeSlider.getValue() / 100);			
+						}
+					});
+						
+					Duration mediaTime = choosenFilePlayer.getTotalDuration();
+					
+					
+					//timeBar.setMax(choosenFilePlayer.getTotalDuration().toSeconds());
 								
-				play.setOnAction(new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent e) {
-						choosenFilePlayer.play();
-					}
-				});
+					InvalidationListener sliderChangeListener =( o-> {
+					    Duration seekTo = Duration.seconds(timeBar.getValue());
+					    choosenFilePlayer.seek(seekTo);
+					});
+					timeBar.valueProperty().addListener(sliderChangeListener);
+					
+					choosenFilePlayer.currentTimeProperty().addListener(l-> {
+					    
+					    timeBar.valueProperty().removeListener(sliderChangeListener);
+				    			   
+					    timeBar.setValue( choosenFilePlayer.getCurrentTime().toSeconds());    
+					   
+					    timeBar.valueProperty().addListener(sliderChangeListener);
+					});
+				}
 				
-				pause.setOnAction(new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent e) {
-						choosenFilePlayer.pause();
-					}
-				});
-				
-				stop.setOnAction(new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent e) {
-						choosenFilePlayer.stop();
-					}
-				});
-				
-				volumeSlider.setValue(choosenFilePlayer.getVolume() *50);
-
-				volumeSlider.valueProperty().addListener(new InvalidationListener() {		
-					@Override
-					public void invalidated(Observable arg0) {
-						choosenFilePlayer.setVolume(volumeSlider.getValue() / 100);			
-					}
-				});
+				else {
+					setSongTitle("Titel auswählen!");			
+				}
 			}
 		});
 		
@@ -345,6 +397,7 @@ public class Main extends Application
 		//--- Set up the MainFrame with the different Panes. Set up the MainFrame and initialize it.
 		mainFrame.setTop(menuBar);
 		mainFrame.setBottom(bottomPanel);
+		mainFrame.setCenter(searchAlert);
 		
 		Scene mainScene = new Scene(mainFrame, 1000,600);
 		mainScene.getStylesheets().add(getClass().getResource("/css/mainTheme.css").toString());	
