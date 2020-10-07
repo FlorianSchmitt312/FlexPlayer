@@ -67,7 +67,7 @@ public class Main extends Application
 	private Slider volumeSlider, timeBar;
 	private FileChooser fileChooser;
 	private Media searchedFile;
-	private MediaPlayer choosenFilePlayer;
+	private MediaPlayer chosenFilePlayer;
 	private String title; 
 
 	//--- Setters and Getters
@@ -294,7 +294,7 @@ public class Main extends Application
 		search.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-					
+				
 				fileChooser.setTitle("Datei auswählen");
 				fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Audiodatei","*.wav","*.mp3"));
 				
@@ -302,71 +302,95 @@ public class Main extends Application
 											
 				if(choosenFile != null) {
 					
-					if(choosenFilePlayer != null) {
-					   choosenFilePlayer.stop();
-					   choosenFilePlayer.dispose();
+					if(chosenFilePlayer != null) {
+					   chosenFilePlayer.stop();
+					   chosenFilePlayer.dispose();
 				    }
 					
 					searchedFile = new Media((choosenFile).toURI().toString());
-					choosenFilePlayer = new MediaPlayer(searchedFile);
-														
+					chosenFilePlayer = new MediaPlayer(searchedFile);
+					
 					title = choosenFile.getName();
 					setSongTitle(title);	
 					
 					setSearchAlert("");
-									
-					play.setOnAction(new EventHandler<ActionEvent>() {
-	
-						@Override
-						public void handle(ActionEvent e) {
-							choosenFilePlayer.play();						
-						}
-					});
+														
+					chosenFilePlayer.setOnReady(() -> {
+																				
+							play.setOnAction(new EventHandler<ActionEvent>() {
+			
+								@Override
+								public void handle(ActionEvent e) {
+									chosenFilePlayer.play();						
+								}
+							});
+							
+							pause.setOnAction(new EventHandler<ActionEvent>() {
+			
+								@Override
+								public void handle(ActionEvent f) {
+									chosenFilePlayer.pause();
+								}
+							});
+							
+							stop.setOnAction(new EventHandler<ActionEvent>() {
+			
+								@Override
+								public void handle(ActionEvent g) {
+									chosenFilePlayer.stop();
+								}
+							});
+											
+							volumeSlider.setValue(chosenFilePlayer.getVolume() *50);
+			
+							volumeSlider.valueProperty().addListener(new InvalidationListener() {		
+								@Override
+								public void invalidated(Observable arg0) {
+									chosenFilePlayer.setVolume(volumeSlider.getValue() / 100);			
+								}
+							});
+										
+							System.out.println("File:" +searchedFile.getDuration().toSeconds());
+							System.out.println("MP: " +chosenFilePlayer.getTotalDuration().toSeconds());
+							
+							timeBar.maxProperty().set(searchedFile.getDuration().toSeconds());
+							
+							System.out.println("Thumb: " +timeBar.getMax());
+																
 					
-					pause.setOnAction(new EventHandler<ActionEvent>() {
-	
-						@Override
-						public void handle(ActionEvent f) {
-							choosenFilePlayer.pause();
-						}
-					});
-					
-					stop.setOnAction(new EventHandler<ActionEvent>() {
-	
-						@Override
-						public void handle(ActionEvent g) {
-							choosenFilePlayer.stop();
-						}
-					});
-									
-					volumeSlider.setValue(choosenFilePlayer.getVolume() *50);
-	
-					volumeSlider.valueProperty().addListener(new InvalidationListener() {		
-						@Override
-						public void invalidated(Observable arg0) {
-							choosenFilePlayer.setVolume(volumeSlider.getValue() / 100);			
-						}
-					});
-						
-					Duration mediaTime = choosenFilePlayer.getTotalDuration();
-					
-					
-					//timeBar.setMax(choosenFilePlayer.getTotalDuration().toSeconds());
-								
-					InvalidationListener sliderChangeListener =( o-> {
-					    Duration seekTo = Duration.seconds(timeBar.getValue());
-					    choosenFilePlayer.seek(seekTo);
-					});
-					timeBar.valueProperty().addListener(sliderChangeListener);
-					
-					choosenFilePlayer.currentTimeProperty().addListener(l-> {
-					    
-					    timeBar.valueProperty().removeListener(sliderChangeListener);
-				    			   
-					    timeBar.setValue( choosenFilePlayer.getCurrentTime().toSeconds());    
-					   
-					    timeBar.valueProperty().addListener(sliderChangeListener);
-					});
+							/*InvalidationListener sliderChangeListener =( o-> {
+							    Duration seekTo = Duration.seconds(timeBar.getValue());
+							    chosenFilePlayer.seek(seekTo);
+							});
+							timeBar.valueProperty().addListener(sliderChangeListener);
+							
+							chosenFilePlayer.currentTimeProperty().addListener(l-> {
+							    
+								timeBar.valueProperty().removeListener(sliderChangeListener);
+						    			   
+							    timeBar.setValue(chosenFilePlayer.getCurrentTime().toSeconds());  
+							    System.out.println(timeBar.getValue());
+							   
+							    timeBar.valueProperty().addListener(sliderChangeListener);
+							});*/
+							
+							chosenFilePlayer.currentTimeProperty().addListener(new InvalidationListener() {
+							    public void invalidated(Observable ov) {
+							    	timeBar.setValue(chosenFilePlayer.getCurrentTime().toSeconds()); 
+							    }
+							});
+							
+							timeBar.addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+
+								@Override
+								public void handle(MouseEvent mouseEvent) {
+									Duration seekTo = Duration.seconds(timeBar.getValue());
+								    chosenFilePlayer.seek(seekTo);
+								    System.out.println(seekTo.toSeconds());
+								}
+							});
+										
+					});				
 				}
 				
 				else {
