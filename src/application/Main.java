@@ -350,45 +350,28 @@ public class Main extends Application
 								}
 							});
 										
-							System.out.println("File:" +searchedFile.getDuration().toSeconds());
-							System.out.println("MP: " +chosenFilePlayer.getTotalDuration().toSeconds());
+							//System.out.println("File:" +searchedFile.getDuration().toSeconds());
+							//System.out.println("MP: " +chosenFilePlayer.getTotalDuration().toSeconds());
 							
 							timeBar.maxProperty().set(searchedFile.getDuration().toSeconds());
-							
-							System.out.println("Thumb: " +timeBar.getMax());
-																
-					
-							/*InvalidationListener sliderChangeListener =( o-> {
-							    Duration seekTo = Duration.seconds(timeBar.getValue());
-							    chosenFilePlayer.seek(seekTo);
-							});
-							timeBar.valueProperty().addListener(sliderChangeListener);
-							
-							chosenFilePlayer.currentTimeProperty().addListener(l-> {
-							    
-								timeBar.valueProperty().removeListener(sliderChangeListener);
-						    			   
-							    timeBar.setValue(chosenFilePlayer.getCurrentTime().toSeconds());  
-							    System.out.println(timeBar.getValue());
-							   
-							    timeBar.valueProperty().addListener(sliderChangeListener);
-							});*/
 							
 							chosenFilePlayer.currentTimeProperty().addListener(new InvalidationListener() {
 							    public void invalidated(Observable ov) {
 							    	timeBar.setValue(chosenFilePlayer.getCurrentTime().toSeconds()); 
 							    }
 							});
-							
-							timeBar.addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
 
-								@Override
-								public void handle(MouseEvent mouseEvent) {
-									Duration seekTo = Duration.seconds(timeBar.getValue());
-								    chosenFilePlayer.seek(seekTo);
-								    System.out.println(seekTo.toSeconds());
-								}
-							});
+							timeBar.setOnMouseClicked(new EventHandler<MouseEvent>() {
+						        @Override
+						        public void handle(MouseEvent event) {
+						        	timeBar.setValueChanging(true);
+						            double value = (event.getX()/timeBar.getWidth())*timeBar.getMax();
+						            timeBar.setValue(value);					            
+						            Duration seekTo = Duration.seconds(value);
+								    chosenFilePlayer.seek(seekTo);				          					            
+						            timeBar.setValueChanging(false);
+						        }
+						});
 										
 					});				
 				}
